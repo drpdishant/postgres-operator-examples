@@ -32,7 +32,7 @@ postgresVersion: 16
 # "pgBouncerConfig". Setting "pgBouncerConfig" will override the value of
 # pgBouncerReplicas. The "RELATED_IMAGE_PGBOUNCER" in the PGO deployment must be
 # set if you want to enable this without explicitly setting "pgBouncer".
-# pgBouncerReplicas: 1
+pgBouncerReplicas: 1
 
 # monitoring enables the ability to monitor the Postgres cluster through a
 # metrics exporter that can be scraped by Prometheus. This defaults to the value
@@ -108,15 +108,15 @@ postgresVersion: 16
 # For example, to set up an instance set with HA (due to the default pod
 # topology spread constraints)
 #
-# instances:
-#   - name: pgha1
-#     replicas: 2
-#     dataVolumeClaimSpec:
-#       accessModes:
-#       - "ReadWriteOnce"
-#       resources:
-#         requests:
-#           storage: 1Gi
+instances:
+  - name: pgha1
+    replicas: 3
+    dataVolumeClaimSpec:
+      accessModes:
+      - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: 100Gi
 # instances: {}
 
 # port sets the port that Postgres listens on. Defaults to 5432.
@@ -124,17 +124,23 @@ postgresVersion: 16
 
 # patroni lets you set the Patroni configuration for the Postgres cluster.
 # for example, to set up synchronous replication:
-# patroni:
-#   dynamicConfiguration:
-#     synchronous_mode: true
-#     postgresql:
-#       parameters:
-#         synchronous_commit: "on"
+patroni:
+  dynamicConfiguration:
+    synchronous_mode: true
+    postgresql:
+      pg_hba:
+          - "hostnossl all all all md5"
+      parameters:
+        synchronous_commit: "on"
 # patroni: {}
 
 # users sets any custom Postgres users and databases that they have  access to
 # as well as any permissions associated with the user account.
-# users: {}
+#spec:
+users:
+  - name: 'surefyuser'
+    options: 'SUPERUSER'
+
 
 # dataSource specifies a data source for bootstrapping a Postgres cluster.
 # dataSource: {}
@@ -175,7 +181,7 @@ postgresVersion: 16
 
 # backupsSize sets the storage size of the backups to a volume in Kubernetes.
 # can be overridden by "pgBackRestConfig", if set. Defaults to the value below.
-# backupsSize: 1Gi
+backupsSize: 100Gi
 
 # backupsStorageClassName sets the storage class to a class existing in Kubernetes.
 # Defaults to the "default" storage class defined in the cluster.
